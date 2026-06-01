@@ -298,7 +298,7 @@ class SnakeVelocityEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.dt = 0.005
         self.sim.render_interval = self.decimation
         self.sim.physics_material = self.scene.terrain.physics_material
-        self.sim.physx.gpu_max_rigid_patch_count = 10 * 2**15
+        self.sim.physx.gpu_max_rigid_patch_count = 2**20
         self.viewer.origin_type = "asset_root"
         self.viewer.env_index = 0
         self.viewer.asset_name = "robot"
