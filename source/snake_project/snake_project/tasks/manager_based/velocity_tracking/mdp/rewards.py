@@ -27,6 +27,29 @@ def joint_amplitude(env: "ManagerBasedRLEnv", asset_cfg: SceneEntityCfg = SceneE
     return torch.mean(torch.abs(asset.data.joint_vel[:, asset_cfg.joint_ids]), dim=1)
 
 
+def joint_centering_l2(env: "ManagerBasedRLEnv", asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+    """Penalize excessive yaw excursions while still allowing a traveling wave."""
+    asset: Articulation = env.scene[asset_cfg.name]
+    joint_pos = asset.data.joint_pos[:, asset_cfg.joint_ids] - asset.data.default_joint_pos[:, asset_cfg.joint_ids]
+    return torch.mean(torch.square(joint_pos), dim=1)
+
+
+def joint_velocity_l2(env: "ManagerBasedRLEnv", asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+    """Small regularizer on active-joint velocity for smoother sim2sim transfer."""
+    asset: Articulation = env.scene[asset_cfg.name]
+    return torch.mean(torch.square(asset.data.joint_vel[:, asset_cfg.joint_ids]), dim=1)
+
+
+def body_wave_smoothness(env: "ManagerBasedRLEnv", asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+    """Penalize high curvature changes along neighboring yaw joints."""
+    asset: Articulation = env.scene[asset_cfg.name]
+    joint_pos = asset.data.joint_pos[:, asset_cfg.joint_ids]
+    if joint_pos.shape[1] < 3:
+        return torch.zeros(env.num_envs, device=env.device)
+    second_diff = joint_pos[:, 2:] - 2.0 * joint_pos[:, 1:-1] + joint_pos[:, :-2]
+    return torch.mean(torch.square(second_diff), dim=1)
+
+
 def motion_coordination(env: "ManagerBasedRLEnv", asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
     """Penalize all active joints bending or moving in the same direction."""
     asset: Articulation = env.scene[asset_cfg.name]

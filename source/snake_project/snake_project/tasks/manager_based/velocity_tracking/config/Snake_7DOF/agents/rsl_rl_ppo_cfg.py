@@ -11,8 +11,8 @@ from isaaclab_rl.rsl_rl import RslRlOnPolicyRunnerCfg, RslRlPpoActorCriticCfg, R
 @configclass
 class SnakeVelocityFlatPPORunnerCfg(RslRlOnPolicyRunnerCfg):
     num_steps_per_env = 24
-    max_iterations = 5000
-    save_interval = 200
+    max_iterations = 20000
+    save_interval = 500
     experiment_name = "snake_velocity_flat_tracking"
     policy = RslRlPpoActorCriticCfg(
         init_noise_std=1.0,
