@@ -15,6 +15,10 @@ def command_velocity_curriculum(
     reward_term_name: str = "track_lin_vel_xy_exp",
     max_curriculum: float = 0.4,
     min_curriculum: float = 0.1,
+    max_curriculum_x: float | None = None,
+    max_curriculum_y: float | None = None,
+    min_curriculum_x: float | None = None,
+    min_curriculum_y: float | None = None,
     step_size: float = 0.05,
     threshold_ratio: float = 0.8,
     ema_decay: float = 0.05,
@@ -29,6 +33,10 @@ def command_velocity_curriculum(
     command_term = env.command_manager.get_term(command_name)
     x_min, x_max = command_term.current_lin_vel_x_range
     y_min, y_max = command_term.current_lin_vel_y_range
+    max_x = max_curriculum if max_curriculum_x is None else max_curriculum_x
+    max_y = max_curriculum if max_curriculum_y is None else max_curriculum_y
+    min_x = min_curriculum if min_curriculum_x is None else min_curriculum_x
+    min_y = min_curriculum if min_curriculum_y is None else min_curriculum_y
 
     if env_ids is None or len(env_ids) == 0:
         return {
@@ -51,11 +59,11 @@ def command_velocity_curriculum(
 
     if len(env_ids) >= min_env_count:
         if ema > threshold:
-            x_min, x_max = command_term.expand_lin_vel_x(step_size=step_size, max_curriculum=max_curriculum)
-            y_min, y_max = command_term.expand_lin_vel_y(step_size=step_size, max_curriculum=max_curriculum)
+            x_min, x_max = command_term.expand_lin_vel_x(step_size=step_size, max_curriculum=max_x)
+            y_min, y_max = command_term.expand_lin_vel_y(step_size=step_size, max_curriculum=max_y)
         elif ema < 0.6 * threshold:
-            x_min, x_max = command_term.shrink_lin_vel_x(step_size=step_size, min_curriculum=min_curriculum)
-            y_min, y_max = command_term.shrink_lin_vel_y(step_size=step_size, min_curriculum=min_curriculum)
+            x_min, x_max = command_term.shrink_lin_vel_x(step_size=step_size, min_curriculum=min_x)
+            y_min, y_max = command_term.shrink_lin_vel_y(step_size=step_size, min_curriculum=min_y)
 
     return {
         "lin_vel_x_min": x_min, "lin_vel_x_max": x_max,
