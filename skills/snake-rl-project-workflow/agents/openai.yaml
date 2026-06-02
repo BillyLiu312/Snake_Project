@@ -1,0 +1,4 @@
+interface:
+  display_name: "Snake RL Workflow"
+  short_description: "Snake_Project training workflow"
+  default_prompt: "Use $snake-rl-project-workflow to continue Snake_Project development, sync the server, tune training, inspect logs, or run sim2sim evaluation."
