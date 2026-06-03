@@ -213,6 +213,34 @@ python sim2sim/sim2sim_eval.py \
   --policy logs/rsl_rl/snake_velocity_flat_tracking/<run>/exported/policy.pt
 ```
 
+## Version Change Records
+
+After each meaningful training/evaluation cycle, update the project version-change record before deciding which policy is the current submission candidate:
+
+```text
+docs/training_version_changes.md
+```
+
+Use git history as the source of truth for code changes:
+
+```bash
+git log --oneline --decorate --max-count 12
+git show --stat <commit>
+git show <commit> -- <changed-task-files>
+```
+
+For each version/run, record:
+
+- run name and representative checkpoint;
+- exported JIT policy path;
+- git commit hash(es) that define the version;
+- concrete changes to commands, observations, rewards, curriculum, domain randomization, PPO settings, and helper scripts;
+- TensorBoard training behavior, especially reward, episode length, value loss, velocity errors, action noise, and invalid-state termination;
+- MuJoCo `sim2sim_eval.py` output directory and MAE summary;
+- whether the version improves or worsens the current best submission candidate.
+
+Do not judge a version only by Isaac Lab reward. Prefer the policy with the best MuJoCo Virtual Chassis MAE, since that is the assignment evaluation target. If a version has high Isaac-side reward but worse MuJoCo MAE, document that as a failed transfer experiment rather than treating it as the new best.
+
 ## Code Editing Guidance
 
 For assignment changes, prefer editing the allowed task area:
