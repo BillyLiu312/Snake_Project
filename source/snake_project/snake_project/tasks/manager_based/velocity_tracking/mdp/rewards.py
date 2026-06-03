@@ -50,6 +50,25 @@ def body_wave_smoothness(env: "ManagerBasedRLEnv", asset_cfg: SceneEntityCfg = S
     return torch.mean(torch.square(second_diff), dim=1)
 
 
+def virtual_chassis_yaw_rate_l1(
+    env: "ManagerBasedRLEnv",
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+) -> torch.Tensor:
+    """Penalize residual Virtual Chassis yaw rate for zero-wz command transfer."""
+    asset: Articulation = env.scene[asset_cfg.name]
+    body_pos_w = asset.data.body_pos_w[:, asset_cfg.body_ids, :]
+    body_lin_vel_w = asset.data.body_lin_vel_w[:, asset_cfg.body_ids, :]
+    body_ang_vel_w = asset.data.body_ang_vel_w[:, asset_cfg.body_ids, :]
+    if not torch.isfinite(body_pos_w).all():
+        return torch.zeros(env.num_envs, device=env.device)
+    _, _, _, yaw_rate = compute_virtual_chassis_command_terms(
+        body_pos_w=body_pos_w,
+        body_lin_vel_w=body_lin_vel_w,
+        body_ang_vel_w=body_ang_vel_w,
+    )
+    return torch.where(torch.isfinite(yaw_rate), torch.abs(yaw_rate), torch.zeros_like(yaw_rate))
+
+
 def motion_coordination(env: "ManagerBasedRLEnv", asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
     """Penalize all active joints bending or moving in the same direction."""
     asset: Articulation = env.scene[asset_cfg.name]

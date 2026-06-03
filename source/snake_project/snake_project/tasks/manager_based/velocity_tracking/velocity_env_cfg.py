@@ -93,8 +93,8 @@ class SnakeVelocityCommandsCfg:
         velocity_marker_max_speed=0.75,
         velocity_marker_z_offset=0.10,
         ranges=mdp.VirtualChassisVelocityCommandCfg.Ranges(
-            lin_vel_x=(-0.20, 0.20),
-            lin_vel_y=(-0.10, 0.10),
+            lin_vel_x=(-0.10, 0.10),
+            lin_vel_y=(-0.05, 0.05),
             ang_vel_z=(-0.0, 0.0),
             heading=(-0.0, 0.0),
         ),
@@ -224,21 +224,22 @@ class SnakeVelocityRewardsCfg:
 
     track_lin_vel_xy_exp = RewTerm(
         func=mdp.VirtualChassisTrackLinVelXYExp,
-        weight=6.0,
-        params={"command_name": "base_velocity", "std": 0.28, "linear_coef": 0.8, "asset_cfg": virtual_chassis_body_cfg()},
+        weight=5.0,
+        params={"command_name": "base_velocity", "std": 0.4, "linear_coef": 0.5, "asset_cfg": virtual_chassis_body_cfg()},
     )
     track_ang_vel_z_exp = RewTerm(
         func=mdp.VirtualChassisTrackAngVelZExp,
-        weight=1.5,
-        params={"command_name": "base_velocity", "std": 0.18, "asset_cfg": virtual_chassis_body_cfg()},
+        weight=1.0,
+        params={"command_name": "base_velocity", "std": 0.25, "asset_cfg": virtual_chassis_body_cfg()},
     )
+    virtual_chassis_yaw_rate = RewTerm(func=mdp.virtual_chassis_yaw_rate_l1, weight=-0.05, params={"asset_cfg": virtual_chassis_body_cfg()})
     ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.05)
     joint_torques_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-1.0e-4, params={"asset_cfg": yaw_joint_cfg()})
     joint_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-7, params={"asset_cfg": yaw_joint_cfg()})
     raw_action_rate = RewTerm(func=mdp.RawActionRatePenalty, weight=-0.01, params={"action_term_name": "joint_pos"})
-    joint_amplitude = RewTerm(func=mdp.joint_amplitude, weight=0.12, params={"asset_cfg": yaw_joint_cfg()})
-    phase_propagation = RewTerm(func=mdp.phase_propagation, weight=0.25, params={"asset_cfg": yaw_joint_cfg()})
-    motion_coordination = RewTerm(func=mdp.motion_coordination, weight=-0.25, params={"asset_cfg": yaw_joint_cfg()})
+    joint_amplitude = RewTerm(func=mdp.joint_amplitude, weight=0.2, params={"asset_cfg": yaw_joint_cfg()})
+    phase_propagation = RewTerm(func=mdp.phase_propagation, weight=0.4, params={"asset_cfg": yaw_joint_cfg()})
+    motion_coordination = RewTerm(func=mdp.motion_coordination, weight=-0.35, params={"asset_cfg": yaw_joint_cfg()})
     joint_centering = RewTerm(func=mdp.joint_centering_l2, weight=-0.02, params={"asset_cfg": yaw_joint_cfg()})
     joint_velocity = RewTerm(func=mdp.joint_velocity_l2, weight=-0.002, params={"asset_cfg": yaw_joint_cfg()})
     body_wave_smoothness = RewTerm(func=mdp.body_wave_smoothness, weight=-0.08, params={"asset_cfg": yaw_joint_cfg()})
@@ -269,13 +270,13 @@ class SnakeVelocityCurriculumCfg:
         params={
             "command_name": "base_velocity",
             "reward_term_name": "track_lin_vel_xy_exp",
-            "max_curriculum_x": 0.25,
-            "max_curriculum_y": 0.15,
-            "min_curriculum_x": 0.20,
-            "min_curriculum_y": 0.10,
+            "max_curriculum_x": 0.20,
+            "max_curriculum_y": 0.10,
+            "min_curriculum_x": 0.10,
+            "min_curriculum_y": 0.05,
             "step_size": 0.05,
-            "threshold_ratio": 0.70,
-            "ema_decay": 0.08,
+            "threshold_ratio": 0.75,
+            "ema_decay": 0.06,
             "min_env_count": 64,
         },
     )
